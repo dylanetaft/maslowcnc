@@ -18,7 +18,7 @@
 void app_main(void)
 {
     printf("Hello world!\n");
-
+     vTaskDelay(10000 / portTICK_PERIOD_MS);
     /* Print chip information */
     esp_chip_info_t chip_info;
     uint32_t flash_size;

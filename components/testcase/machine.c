@@ -99,14 +99,37 @@ void initialize_gpio_pins()
 {
      //fan enable
     gpio_config_t io_conf = {
-        .pin_bit_mask = (1ULL << PIN_COOLING_FAN),
+        .pin_bit_mask = (1ULL << PIN_COOLING_FAN) | 
+        (1ULL << PIN_MZ_STEP) |
+        (1ULL << PIN_MZ_DIRECTION) | 
+        (1ULL << PIN_BL_IN_1) | 
+        (1ULL << PIN_BL_IN_2) | 
+        (1ULL << PIN_BR_IN_1) | 
+        (1ULL << PIN_BR_IN_2) | 
+        (1ULL << PIN_TR_IN_1) | 
+        (1ULL << PIN_TR_IN_2) | 
+        (1ULL << PIN_TL_IN_1) | 
+        (1ULL << PIN_TL_IN_2) |
+        (1ULL << PIN_TRINAMIC_TX),
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
         .pull_down_en = GPIO_PULLUP_DISABLE,
         .intr_type = GPIO_INTR_DISABLE
     };
     gpio_config(&io_conf);
-    gpio_set_level(PIN_COOLING_FAN, 0);     
+    gpio_set_level(PIN_COOLING_FAN, 0);
+    gpio_set_level(PIN_MZ_STEP, 0);
+    gpio_set_level(PIN_MZ_DIRECTION, 0);
+    gpio_set_level(PIN_BL_IN_1, 0);
+    gpio_set_level(PIN_BL_IN_2, 0);
+    gpio_set_level(PIN_BR_IN_1, 0);
+    gpio_set_level(PIN_BR_IN_2, 0);
+    gpio_set_level(PIN_TR_IN_1, 0);
+    gpio_set_level(PIN_TR_IN_2, 0);
+    gpio_set_level(PIN_TL_IN_1, 0);
+    gpio_set_level(PIN_TL_IN_2, 0);
+    gpio_set_level(PIN_TRINAMIC_TX, 0); // Set the Trinamic TX pin to low
+
     
     
 }

@@ -17,10 +17,15 @@
 #define PIN_TL_IN_1 45
 #define PIN_TL_IN_2 21
 
+#define PIN_TRINAMIC_TX 1
+
 #define PIN_ADC_BL 8
 #define PIN_ADC_BR 7
 #define PIN_ADC_TR 6
 #define PIN_ADC_TL 18
+
+#define PIN_MZ_STEP 15
+#define PIN_MZ_DIRECTION 16
 
 #define PIN_COOLING_FAN 47
 
