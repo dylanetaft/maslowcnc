@@ -30,11 +30,6 @@
 #define PIN_COOLING_FAN 47
 
 
-#define ADC_SAMPLE_RATE 10000 // Sample rate in Hz, .1ms per sample
-#define ADC_CB_RET_MIN_BYTES (4 * 32)
-#define ADC_CB_RET_BUFSIZE (ADC_CB_RET_MIN_BYTES * 8) // Number of samples to return in the callback
-
-
 struct maslow_task_entry {
     void (*task_func)(); // Pointer to the task function
     struct maslow_task_entry *next; // Pointer to the next task in the list
@@ -52,7 +47,7 @@ void maslow_task_func_extend_belt();
 // This function should be called in the setup phase of the application
 void initialize_gpio_pins();
 void initialize_task_timer();
-void initialize_adc_continuous();
+void initialize_adc();
 
 
 void maslow_initialize();
