@@ -1,0 +1,3 @@
+[submodule "components/testcase/external/AS5600_C"]
+	path = components/testcase/external/AS5600_C
+	url = git@github.com:dylanetaft/AS5600_C.git
