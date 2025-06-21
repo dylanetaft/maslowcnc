@@ -6,6 +6,7 @@
 #include "freertos/portmacro.h"
 #include "esp_timer.h"
 #include "adc.h"
+#include "peripherals_i2c.h"
 
 struct maslow_task_entry *task_list_head = NULL; // Head of the task list
 
@@ -29,6 +30,7 @@ void maslow_initialize()
     initialize_gpio_pins(); // Initialize GPIO pins
     initialize_task_timer(); // Initialize the task timer
     adc_initialize(); // Initialize ADC for continuous reading
+    initialize_i2c_peripherals(); // Initialize I2C peripherals
 }
 
 void maslow_task_func_extend_belt() {

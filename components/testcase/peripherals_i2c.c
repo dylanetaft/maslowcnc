@@ -1,13 +1,15 @@
 #include "peripherals_i2c.h"
+#include "libTCA9548A.h"
 
-#include "QWIICMUX.h"
 #include "AS5600.h"
 #include "adc.h"
 #include "driver/gptimer.h"
+#include "driver/gpio.h"
 #include "esp_adc/adc_oneshot.h"
 #include "freertos/FreeRTOS.h"
 #include "freertos/portmacro.h"
 #include "esp_timer.h"
+#include "driver/i2c_master.h"
 #include <assert.h>
 
 TaskHandle_t i2c_taskhandle = NULL; // Pointer to the created task handle
@@ -19,15 +21,19 @@ volatile int64_t i2c_ask_last_execute_time = 0; // Last time an ADC reading was 
 
 
 i2c_master_bus_handle_t _bus_handle = NULL;
-i2c_master_dev_handle_t _dev_handle_AS5600; = NULL;
+i2c_master_dev_handle_t _dev_handle_AS5600 = NULL;
 i2c_master_dev_handle_t _dev_handle_QWIICMUX = NULL;
 i2c_master_dev_handle_t *_current_dev_handle = NULL; // Pointer to the currently selected I2C device handle
 
 
 struct AS5600_DEV _as5600_devices[4];
 
-#define AS5600_ADDR = 0x36 // AS5600 default address
-#define QWIICMUX_ADDR = 0x70 // QWIIC MUX default address
+#define AS5600_ADDR 0x36 // AS5600 default address
+#define QWIICMUX_ADDR 0x70 // QWIIC MUX default address
+
+
+i2c_master_dev_handle_t *getI2CDevHandleByAddr(uint8_t addr);
+
 
 void i2c_start(uint8_t address) {
     _current_dev_handle = getI2CDevHandleByAddr(address);
@@ -56,8 +62,7 @@ int i2c_readBytes(uint8_t *data, uint8_t length) {
 
 static void i2c_task(void *arg)
 {  
-    int res;
-    int val;
+
 
     while (1) {
 
@@ -80,6 +85,9 @@ static void IRAM_ATTR i2c_timer_callback (void* arg) {
     } 
 }
 
+void _digitalWrite(uint16_t pin, uint8_t value) {
+    gpio_set_level(pin, value);
+}
 
 void initialize_i2c_devices() {
     
@@ -101,35 +109,32 @@ void initialize_i2c_devices() {
     dev_cfg.scl_speed_hz = 100000; // 100kHz I2C speed
 
 
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg, &_dev_handle_AS5600));
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(_bus_handle, &dev_cfg, &_dev_handle_AS5600));
 
-    dev_cfg = { 0 }; // zero everything
     dev_cfg.dev_addr_length = I2C_ADDR_BIT_LEN_7;
     dev_cfg.device_address = QWIICMUX_ADDR; //Quiic Mux default address
     dev_cfg.scl_speed_hz = 100000; // 100kHz I2C speed
 
 
-    ESP_ERROR_CHECK(i2c_master_bus_add_device(bus_handle, &dev_cfg, &_dev_handle_QWIICMUX));
+    ESP_ERROR_CHECK(i2c_master_bus_add_device(_bus_handle, &dev_cfg, &_dev_handle_QWIICMUX));
 
 
-    struct AS5600_HAL as5600_hal{
-            .digitalWrite = &gpio_set_level,
-            .i2c_start = &i2c_start,
-            .i2c_end = &i2c_end,
-            .i2c_writeBytes = &i2c_writeBytes,
-            .i2c_readBytes = &i2c_readBytes,
-            .micros = &esp_timer_get_time
-    };
+    struct AS5600_HAL as5600_hal;
+    as5600_hal.digitalWrite = &_digitalWrite;
+    as5600_hal.i2c_start = &i2c_start;
+    as5600_hal.i2c_end = &i2c_end;
+    as5600_hal.i2c_writeBytes = &i2c_writeBytes;
+    as5600_hal.i2c_readBytes = &i2c_readBytes;
+    as5600_hal.micros = &esp_timer_get_time;
     
-    assert(QWIICMUX_begin((struct QWIICMUX_HAL){
-        .i2c_start = &i2c_start,
-        .i2c_end = &i2c_end,
-        .i2c_writeBytes = &i2c_writeBytes,
-        .i2c_readBytes = &i2c_readBytes
-    })); // Initialize the QWIIC MUX
-
+    struct QWIICMUX_HAL qwiicmux_hal;
+    qwiicmux_hal.i2c_start = &i2c_start;
+    qwiicmux_hal.i2c_end = &i2c_end;
+    qwiicmux_hal.i2c_writeBytes = &i2c_writeBytes;
+    qwiicmux_hal.i2c_readBytes = &i2c_readBytes;
+    assert(QWIICMUX_begin(qwiicmux_hal)); // Initialize the QWIIC MUX
     for (int i = 0;i < 4;i++) {
-        QUICKMUX_setPort(i);
+        assert(QWIICMUX_setPort(i));
         assert(AS5600_begin(&_as5600_devices[i], 255,as5600_hal)); //255 is sw direction pin, its grounded on maslow, assert it is connected
 
     }
@@ -137,7 +142,7 @@ void initialize_i2c_devices() {
 }
 
 
-i2c_master_dev_handle_t &getI2CDevHandleByAddr(uint8_t addr) {
+i2c_master_dev_handle_t *getI2CDevHandleByAddr(uint8_t addr) {
     if (addr == AS5600_ADDR) { // AS5600 default addresses
         return &_dev_handle_AS5600;
     } else if (addr == QWIICMUX_ADDR) { // QWIIC MUX default address
