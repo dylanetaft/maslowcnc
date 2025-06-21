@@ -11,7 +11,7 @@ volatile uint16_t adc_last_avg_readings[4] = {0}; // Array to hold the last read
 esp_timer_handle_t adc_timer;
 
 TaskHandle_t motor_adc_taskhandle = NULL; // Pointer to the created task handle
-int64_t adc_last_read_time = 0; // Last time an ADC reading was taken
+volatile int64_t adc_last_read_time = 0; // Last time an ADC reading was taken
 volatile bool adc_reading_in_progress = false; // Flag to indicate if an ADC reading is in progress
 
 

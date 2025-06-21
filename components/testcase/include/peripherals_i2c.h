@@ -1,0 +1,3 @@
+#ifndef PERIPHERALS_I2C_H
+#define PERIPHERALS_I2C_H
+#endif
