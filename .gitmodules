@@ -1,6 +1,3 @@
-[submodule "components/testcase/external/AS5600_C"]
-	path = components/testcase/external/AS5600_C
-	url = git@github.com:dylanetaft/AS5600_C.git
-[submodule "components/testcase/external/libTCA9548A"]
-	path = components/testcase/external/libTCA9548A
-	url = https://github.com/dylanetaft/libTCA9548A.git
+[submodule "components/testcase/external/I2C_HAL_drivers"]
+	path = components/testcase/external/I2C_HAL_drivers
+	url = https://github.com/dylanetaft/I2C_HAL_drivers.git

@@ -14,11 +14,15 @@
 #include "esp_system.h"
 #include "include/machine.h"
 #include "machine.h"
+#include "i2c_beltsensor.h"
+#include "brushedmotor.h"
+#include "driver/i2c_master.h"
+
 
 void app_main(void)
 {
     printf("Hello world!\n");
-     vTaskDelay(10000 / portTICK_PERIOD_MS);
+
     /* Print chip information */
     esp_chip_info_t chip_info;
     uint32_t flash_size;
@@ -43,17 +47,34 @@ void app_main(void)
            (chip_info.features & CHIP_FEATURE_EMB_FLASH) ? "embedded" : "external");
 
     printf("Minimum free heap size: %" PRIu32 " bytes\n", esp_get_minimum_free_heap_size());
-    
-    maslow_initialize(); // Initialize the machine
-    //enable_cooling_fan(true); // Turn on the cooling fan
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
 
-    for (int i = 10; i >= 0; i--) {
+    maslow_initialize(); // Initialize the machine
+    enable_cooling_fan(true); // Turn on the cooling fan
+    /*
+     vTaskDelay(10000 / portTICK_PERIOD_MS);
+     brushedmotor_set_speed(2, 1, 128); 
+     vTaskDelay(1000 / portTICK_PERIOD_MS);
+    brushedmotor_set_speed(2, 1, 0); 
+    vTaskDelay(1000 / portTICK_PERIOD_MS);
+      brushedmotor_set_speed(3, 1, 128); 
+     vTaskDelay(1000 / portTICK_PERIOD_MS);
+    brushedmotor_set_speed(3, 1, 0); 
+    vTaskDelay(1000 / portTICK_PERIOD_MS);   
+    */
+    for (int i = 180; i >= 0; i--) {
         printf("Restarting in %d seconds...\n", i);
         printf("ADC Readings: BL: %d, BR: %d, TR: %d, TL: %d\n",
                adc_last_avg_readings[0],
                adc_last_avg_readings[1],
                adc_last_avg_readings[2],
                adc_last_avg_readings[3]);
+       const int32_t *belt_positions = getBeltPositions();
+        printf("Belt Positions: AS5600_1: %ld, AS5600_2: %ld, AS5600_3: %ld, AS5600_4: %ld\n",
+               belt_positions[0],
+               belt_positions[1],
+               belt_positions[2],
+               belt_positions[3]);  
                
         vTaskDelay(1000 / portTICK_PERIOD_MS);
     }

@@ -8,14 +8,6 @@
 //these pins tie to GPIO pin ids on the ESP32, not the physical pins
 // CONFIG_ADC_CONTINUOUS_ISR_IRAM_SAFE, GPTIMER_ISR_IRAM_SAFE
 
-#define PIN_BL_IN_1 37
-#define PIN_BL_IN_2 36
-#define PIN_BR_IN_1 9
-#define PIN_BR_IN_2 3
-#define PIN_TR_IN_1 42
-#define PIN_TR_IN_2 41
-#define PIN_TL_IN_1 45
-#define PIN_TL_IN_2 21
 
 #define PIN_TRINAMIC_TX 1
 

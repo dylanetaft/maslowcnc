@@ -6,7 +6,8 @@
 #include "freertos/portmacro.h"
 #include "esp_timer.h"
 #include "adc.h"
-#include "peripherals_i2c.h"
+#include "i2c_beltsensor.h"
+#include "brushedmotor.h"
 
 struct maslow_task_entry *task_list_head = NULL; // Head of the task list
 
@@ -30,7 +31,8 @@ void maslow_initialize()
     initialize_gpio_pins(); // Initialize GPIO pins
     initialize_task_timer(); // Initialize the task timer
     adc_initialize(); // Initialize ADC for continuous reading
-    initialize_i2c_peripherals(); // Initialize I2C peripherals
+    initialize_belt_sensor(); // Initialize I2C peripherals
+    initialize_brushedmotor(); // Initialize brushed motors
 }
 
 void maslow_task_func_extend_belt() {
@@ -95,14 +97,6 @@ void initialize_gpio_pins()
         .pin_bit_mask = (1ULL << PIN_COOLING_FAN) | 
         (1ULL << PIN_MZ_STEP) |
         (1ULL << PIN_MZ_DIRECTION) | 
-        (1ULL << PIN_BL_IN_1) | 
-        (1ULL << PIN_BL_IN_2) | 
-        (1ULL << PIN_BR_IN_1) | 
-        (1ULL << PIN_BR_IN_2) | 
-        (1ULL << PIN_TR_IN_1) | 
-        (1ULL << PIN_TR_IN_2) | 
-        (1ULL << PIN_TL_IN_1) | 
-        (1ULL << PIN_TL_IN_2) |
         (1ULL << PIN_TRINAMIC_TX),
         .mode = GPIO_MODE_OUTPUT,
         .pull_up_en = GPIO_PULLUP_DISABLE,
@@ -113,14 +107,6 @@ void initialize_gpio_pins()
     gpio_set_level(PIN_COOLING_FAN, 0);
     gpio_set_level(PIN_MZ_STEP, 0);
     gpio_set_level(PIN_MZ_DIRECTION, 0);
-    gpio_set_level(PIN_BL_IN_1, 0);
-    gpio_set_level(PIN_BL_IN_2, 0);
-    gpio_set_level(PIN_BR_IN_1, 0);
-    gpio_set_level(PIN_BR_IN_2, 0);
-    gpio_set_level(PIN_TR_IN_1, 0);
-    gpio_set_level(PIN_TR_IN_2, 0);
-    gpio_set_level(PIN_TL_IN_1, 0);
-    gpio_set_level(PIN_TL_IN_2, 0);
     gpio_set_level(PIN_TRINAMIC_TX, 0); // Set the Trinamic TX pin to low
 
     
