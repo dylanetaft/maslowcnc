@@ -17,8 +17,26 @@
 
 #define PORT 23
 
+int _listen_sock = -1; // Socket for listening to incoming connections
+
 void initialize_wifi();
 void initialize_socket();
+TaskHandle_t server_taskhandle = NULL; // Handle for the server task
+
+void server_task(void *param) {
+    assert(listen(_listen_sock, 1) == 0); // Start listening for incoming connections
+    struct sockaddr_storage source_addr; // Large enough for both IPv4 or IPv6
+    socklen_t addr_len = sizeof(source_addr);
+    while (1) {
+        int sock = accept(listen_sock, (struct sockaddr *)&source_addr, &addr_len);
+        if (sock < 0) {
+            ESP_LOGE(TAG, "Unable to accept connection: errno %d", errno);
+            continue; // If accept fails, continue to the next iteration
+        }
+    }
+
+}
+
 
 void initialize_socket() {
         int ip_protocol = IPPROTO_IPV6;
@@ -29,10 +47,15 @@ void initialize_socket() {
         bzero(&dest_addr_ip6->sin6_addr.un, sizeof(dest_addr_ip6->sin6_addr.un));
         dest_addr_ip6->sin6_family = AF_INET6;
         dest_addr_ip6->sin6_port = htons(PORT);
-        int listen_sock = socket(addr_family, SOCK_STREAM, ip_protocol);
-        assert(listen_sock >= 0);
+        _listen_sock = socket(addr_family, SOCK_STREAM, ip_protocol);
+        assert(_listen_sock >= 0);
         int no = 0;
-        assert((setsockopt(listen_sock, IPPROTO_IPV6, IPV6_V6ONLY, &no, sizeof(no)) < 0));
+        assert((setsockopt(_listen_sock, IPPROTO_IPV6, IPV6_V6ONLY, &no, sizeof(no)) == 0));
+        assert(setsockopt(listen_sock, SOL_SOCKET, SO_REUSEADDR, &opt, sizeof(opt) == 0));
+
+        struct sockaddr_in6 *bind_addr = (struct sockaddr_in6 *)&dest_addr;
+        assert((bind(_listen_sock, (struct sockaddr *)bind_addr, sizeof(*bind_addr)) == 0));
+        xTaskCreate(server_taskhandle, "tcp_server", 8096, NULL , 5, NULL);
 }
 
 void initialize_networking() {
